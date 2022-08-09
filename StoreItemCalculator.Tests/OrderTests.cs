@@ -56,19 +56,23 @@ namespace StoreItemCalculator.Tests
 			Assert.That(order.TotalPrice, Is.EqualTo(201));
 		}
 
-		[Test]
-		public void PrepareOrderWithUnitDiscount()
+		[TestCase(3, 540)]
+		[TestCase(4, 540)]
+		[TestCase(5, 720)]
+		[TestCase(6, 900)]
+		[TestCase(7, 1080)]
+		public void PrepareOrderWithUnitDiscount(int quantity, decimal expectedTotal)
 		{
 			var cart = new Cart();
 			var productsWithUnitDiscount = GetProducts(discountType: DiscountType.Unit);
 			foreach (var product in productsWithUnitDiscount)
 			{
-				cart.LineItems.Add(new CartLineItem { ProductId = product.Id, Quantity = 4 });
+				cart.LineItems.Add(new CartLineItem { ProductId = product.Id, Quantity = quantity});
 			}
 
 			var order = orderService.PrepareOrder(cart);
 
-			Assert.That(order.TotalPrice, Is.EqualTo(540));
+			Assert.That(order.TotalPrice, Is.EqualTo(expectedTotal));
 		}
 
 		private void InitProducts()

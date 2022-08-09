@@ -36,7 +36,22 @@ namespace StoreItemCalculator.Lib
 			decimal discount = 0;
 			if (Discount != null && cartLineItem.Quantity > Discount.UnitsNeeded)
 			{
-				discount = (cartLineItem.Quantity / Discount.UnitsNeeded) * Discount.UnitsFree * unitPrice;
+				var noOfBlocks = cartLineItem.Quantity / Discount.UnitsNeeded;
+
+				while(noOfBlocks > 0)
+				{
+					var remaining = cartLineItem.Quantity - (noOfBlocks * Discount.UnitsNeeded);
+
+					if (remaining >= noOfBlocks)
+					{
+						discount = noOfBlocks * Discount.UnitsFree * unitPrice;
+						break;
+					}
+					else
+					{
+						noOfBlocks--;
+					}
+				}
 			}
 
 			return discount;
