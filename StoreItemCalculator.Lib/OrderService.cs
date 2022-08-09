@@ -55,11 +55,11 @@ namespace StoreItemCalculator.Lib
 			order.Date = cart.OrderDate ?? DateTime.UtcNow;
 
 			// Calculate the general weekday related discount
-			order.TotalPrice -= GetWeekdayDiscount((int)order.Date.DayOfWeek, order.TotalPrice);
+			order.Discount = GetWeekdayDiscount((int)order.Date.DayOfWeek, order.TotalPrice);
+			order.TotalPrice -= order.Discount;
 
 			return order;
 		}
-
 
 		private decimal GetWeekdayDiscount(int dayOfWeek, decimal totalPrice)
 		{

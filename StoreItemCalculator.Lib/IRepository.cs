@@ -7,6 +7,6 @@ namespace StoreItemCalculator.Lib
 	{
 		List<Product> GetProducts(int[] ids);
 
-		List<Discount> GetDiscounts(DiscountType discount);
+		List<Discount> GetDiscounts(DiscountType discountType);
 	}
 }

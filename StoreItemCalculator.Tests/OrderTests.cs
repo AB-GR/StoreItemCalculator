@@ -172,13 +172,13 @@ namespace StoreItemCalculator.Tests
 			};
 		}
 
-		private List<Product> GetProducts(int[] productIds) => products.Where(x => productIds.Contains(x.Id)).ToList();
+		private List<Product> GetProducts(int[] productIds) 
+			=> products.Where(x => productIds.Contains(x.Id)).ToList();
 
-		private List<Discount> GetDiscounts(DiscountType discountType) => discounts.Where(x => x.Type == discountType).ToList();
+		private List<Discount> GetDiscounts(DiscountType discountType) 
+			=> discounts.Where(x => x.Type == discountType).ToList();
 
-		private List<Product> GetProducts(DiscountType? discountType = null, bool fetchAll = false)
-		{
-			return products.Where(x => fetchAll || x.DiscountStrategy?.Discount?.Type == discountType).ToList();
-		}
+		private List<Product> GetProducts(DiscountType? discountType = null, bool fetchAll = false) 
+			=> products.Where(x => fetchAll || x.DiscountStrategy?.Discount?.Type == discountType).ToList();
 	}
 }
