@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace StoreItemCalculator.Lib.Models
 {
 	public class Cart
 	{
 		public List<CartLineItem> LineItems { get; private set; }
+
+		public DateTime? OrderDate { get; set; }
 
 		public Cart()
 		{

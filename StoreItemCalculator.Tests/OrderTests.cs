@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using StoreItemCalculator.Lib;
 using StoreItemCalculator.Lib.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,6 +13,7 @@ namespace StoreItemCalculator.Tests
 		private readonly IOrderService orderService;
 		private readonly Mock<IRepository> mockRepository;
 		private List<Product> products;
+		private	List<Discount> discounts;
 
 		public OrderTests()
 		{
@@ -22,8 +24,9 @@ namespace StoreItemCalculator.Tests
 		[SetUp]
 		public void Setup()
 		{
-			InitProducts();
+			Init();
 			mockRepository.Setup(x => x.GetProducts(It.IsAny<int[]>())).Returns<int[]>((ids) => GetProducts(ids));
+			mockRepository.Setup(x => x.GetDiscounts(It.IsAny<DiscountType>())).Returns(new List<Discount>());
 		}
 
 		[Test]
@@ -75,22 +78,64 @@ namespace StoreItemCalculator.Tests
 			Assert.That(order.TotalPrice, Is.EqualTo(expectedTotal));
 		}
 
-		private void InitProducts()
+		[TestCase(true)]
+		[TestCase(false)]
+		public void PrepareOrderWithDayDiscount(bool dayWithDiscount)
 		{
+			mockRepository.Setup(x => x.GetDiscounts(It.IsAny<DiscountType>())).Returns<DiscountType>((discountType) => GetDiscounts(discountType));
+
+			var cart = new Cart { OrderDate = DateTime.Parse(dayWithDiscount ? "2022/08/08" : "2022/08/09") };
+			var productsWithoutDiscount = GetProducts();
+			foreach (var product in productsWithoutDiscount)
+			{
+				cart.LineItems.Add(new CartLineItem { ProductId = product.Id, Quantity = 1 });
+			}
+
+			var order = orderService.PrepareOrder(cart);
+
+			Assert.That(order.TotalPrice, Is.EqualTo(dayWithDiscount ? 220.5 : 225));
+		}
+
+		[Test]
+		public void PrepareOrderForAllProducts()
+		{
+			var cart = new Cart();
+			var allProducts = GetProducts(fetchAll: true);
+			foreach (var product in allProducts)
+			{
+				cart.LineItems.Add(new CartLineItem { ProductId = product.Id, Quantity = 1 });
+			}
+
+			var order = orderService.PrepareOrder(cart);
+
+			Assert.That(order.TotalPrice, Is.EqualTo(606));
+		}
+
+		private void Init()
+		{
+			discounts = new List<Discount>
+			{
+				new Discount{ Id = 1, Type = DiscountType.Flat, Percent = 10 },
+				new Discount { Id = 2, Type = DiscountType.Unit, UnitsNeeded = 3, UnitsFree = 1 },
+				new Discount { Id = 3, Type = DiscountType.Flat, Percent = 5 },
+				new Discount { Id = 3, Type = DiscountType.Weekday, DayOfWeek = 1, Percent = 2 },
+				new Discount { Id = 3, Type = DiscountType.Weekday, DayOfWeek = 3, Percent = 5 }
+			};
+
 			products = new List<Product> { 
 				new Product
 				{
 					Id = 1,
 					Name = "Thumbs up",
 					UnitPrice = 20,
-					DiscountStrategy = new FlatDiscountStrategy(new Discount{ Type = DiscountType.Flat, Percent = 10 })
+					DiscountStrategy = new FlatDiscountStrategy(discounts[0])
 				},
 				new Product
 				{
 					Id = 2,
 					Name = "Toilet Cleaner",
 					UnitPrice = 45,
-					DiscountStrategy = new FlatDiscountStrategy(new Discount{ Type = DiscountType.Flat, Percent = 10 })
+					DiscountStrategy = new FlatDiscountStrategy(discounts[0])
 				},
 				new Product
 				{
@@ -103,7 +148,7 @@ namespace StoreItemCalculator.Tests
 					Id = 4,
 					Name = "Cooking Oil Bottle - 1 liter",
 					UnitPrice = 180,
-					DiscountStrategy = new UnitDiscountStrategy(new Discount { Type = DiscountType.Unit, UnitsNeeded = 3, UnitsFree = 1 })
+					DiscountStrategy = new UnitDiscountStrategy(discounts[1])
 				},
 				new Product
 				{
@@ -116,7 +161,7 @@ namespace StoreItemCalculator.Tests
 					Id = 6,
 					Name = "Tea",
 					UnitPrice = 150,
-					DiscountStrategy = new FlatDiscountStrategy(new Discount{ Type = DiscountType.Flat, Percent = 5 })
+					DiscountStrategy = new FlatDiscountStrategy(discounts[2])
 				},
 				new Product
 				{
@@ -127,14 +172,13 @@ namespace StoreItemCalculator.Tests
 			};
 		}
 
-		private List<Product> GetProducts(int[] productIds)
-		{
-			return products.Where(x => productIds.Contains(x.Id)).ToList();
-		}
+		private List<Product> GetProducts(int[] productIds) => products.Where(x => productIds.Contains(x.Id)).ToList();
 
-		private List<Product> GetProducts(DiscountType? discountType = null)
+		private List<Discount> GetDiscounts(DiscountType discountType) => discounts.Where(x => x.Type == discountType).ToList();
+
+		private List<Product> GetProducts(DiscountType? discountType = null, bool fetchAll = false)
 		{
-			return products.Where(x => x.DiscountStrategy?.Discount?.Type == discountType).ToList();
+			return products.Where(x => fetchAll || x.DiscountStrategy?.Discount?.Type == discountType).ToList();
 		}
 	}
 }

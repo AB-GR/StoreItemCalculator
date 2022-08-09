@@ -48,11 +48,23 @@ namespace StoreItemCalculator.Lib
 				}
 
 				order.TotalPrice += orderLineItem.TotalPrice;
-				order.Date = DateTime.UtcNow;
 				order.LineItems.Add(orderLineItem);
 			}
 
+
+			order.Date = cart.OrderDate ?? DateTime.UtcNow;
+
+			// Calculate the general weekday related discount
+			order.TotalPrice -= GetWeekdayDiscount((int)order.Date.DayOfWeek, order.TotalPrice);
+
 			return order;
+		}
+
+
+		private decimal GetWeekdayDiscount(int dayOfWeek, decimal totalPrice)
+		{
+			var discount = repository.GetDiscounts(DiscountType.Weekday).FirstOrDefault(x => x.DayOfWeek == dayOfWeek);
+			return discount != null ? totalPrice * (discount.Percent / 100) : 0;
 		}
 	}
 }
