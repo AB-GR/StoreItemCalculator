@@ -30,7 +30,7 @@ namespace StoreItemCalculator.Tests
 		}
 
 		[Test]
-		public void PrepareOrderWithoutDiscount()
+		public void PrepareOrder_ForProducts_WithoutDiscount()
 		{
 			var cart = new Cart();
 			var productsWithoutDiscount = GetProducts();
@@ -45,7 +45,7 @@ namespace StoreItemCalculator.Tests
 		}
 
 		[Test]
-		public void PrepareOrderWithFlatDiscount()
+		public void PrepareOrder_ForProducts_WithFlatDiscount()
 		{
 			var cart = new Cart();
 			var productsWithFlatDiscount = GetProducts(discountType: DiscountType.Flat);
@@ -64,7 +64,7 @@ namespace StoreItemCalculator.Tests
 		[TestCase(5, 720)]
 		[TestCase(6, 900)]
 		[TestCase(7, 1080)]
-		public void PrepareOrderWithUnitDiscount(int quantity, decimal expectedTotal)
+		public void PrepareOrder_ForProducts_WithUnitDiscount(int quantity, decimal expectedTotal)
 		{
 			var cart = new Cart();
 			var productsWithUnitDiscount = GetProducts(discountType: DiscountType.Unit);
@@ -80,7 +80,7 @@ namespace StoreItemCalculator.Tests
 
 		[TestCase(true)]
 		[TestCase(false)]
-		public void PrepareOrderWithDayDiscount(bool dayWithDiscount)
+		public void PrepareOrder_ForProducts_WithDayDiscount(bool dayWithDiscount)
 		{
 			mockRepository.Setup(x => x.GetDiscounts(It.IsAny<DiscountType>())).Returns<DiscountType>((discountType) => GetDiscounts(discountType));
 
@@ -97,7 +97,7 @@ namespace StoreItemCalculator.Tests
 		}
 
 		[Test]
-		public void PrepareOrderForAllProducts()
+		public void PrepareOrder_For_AllProducts()
 		{
 			var cart = new Cart();
 			var allProducts = GetProducts(fetchAll: true);

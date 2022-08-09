@@ -2,6 +2,10 @@
 
 namespace StoreItemCalculator.Lib
 {
+	// Using strategy pattern to inject a discount calculation strategy when loading from the data layer
+	// This injection would ideally be done on the business side
+	// Using this pattern is advantageous as in future additional strategies can be added and also modifications will
+	// happen in the individual strategy without affecting the Order Service
 	public interface IProductDiscountStrategy
 	{
 		Discount Discount { get; }

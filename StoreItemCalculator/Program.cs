@@ -9,7 +9,7 @@ namespace StoreItemCalculator
 	{
 		static void Main(string[] args)
 		{
-			// Init products and discounts repository, due to the focus being design i have used an in memory repository & not used any db/file
+			// Init products and discounts repository, due to the focus being on design, i have used an in memory repository & not used any db/file.
 			var storeRepo = new StoreRepository();
 			var orderService = new OrderService(storeRepo);
 
