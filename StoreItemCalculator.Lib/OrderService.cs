@@ -1,5 +1,6 @@
 ﻿using StoreItemCalculator.Lib.Models;
 using System;
+using System.Linq;
 
 namespace StoreItemCalculator.Lib
 {
@@ -21,9 +22,15 @@ namespace StoreItemCalculator.Lib
 		{
 			var order = new Order();
 			int counter = 0;
+			var products = repository.GetProducts(cart.LineItems.Select(x => x.ProductId).ToArray());
 			foreach (var cartLineItem in cart.LineItems)
 			{
-				var product = repository.GetProduct(cartLineItem.ProductId);
+				var product = products.FirstOrDefault(x => x.Id == cartLineItem.ProductId);
+				if(product == null)
+				{
+					continue;
+				}
+
 				var orderLineItem = new OrderLineItem
 				{
 					ProductName = product.Name,
@@ -33,21 +40,10 @@ namespace StoreItemCalculator.Lib
 					TotalPrice = product.UnitPrice * cartLineItem.Quantity
 				};
 
-				if(product.Discount != null)
+				if(product.DiscountStrategy != null)
 				{
-					if(product.Discount.Type == DiscountType.Flat)
-					{
-						orderLineItem.DiscountAmount = product.Discount.Percent / 100 * orderLineItem.TotalPrice;
-					}
-					else if(product.Discount.Type == DiscountType.Unit)
-					{
-						if(orderLineItem.Quantity > product.Discount.UnitsNeeded)
-						{
-							orderLineItem.DiscountAmount = (orderLineItem.Quantity/ product.Discount.UnitsNeeded) * product.Discount.UnitsFree * product.UnitPrice;
-						}
-					}
-
-					orderLineItem.DiscountDescription = $"{product.Discount.Type} Discount";
+					orderLineItem.DiscountAmount = product.DiscountStrategy.CalculateDiscount(product.UnitPrice, cartLineItem);
+					orderLineItem.DiscountDescription = $"{product.DiscountStrategy.Discount.Type} Discount";
 					orderLineItem.TotalPrice -= orderLineItem.DiscountAmount;
 				}
 

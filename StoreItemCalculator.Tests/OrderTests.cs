@@ -23,8 +23,7 @@ namespace StoreItemCalculator.Tests
 		public void Setup()
 		{
 			InitProducts();
-			mockRepository.Setup(x => x.GetProducts()).Returns(products);
-			mockRepository.Setup(x => x.GetProduct(It.IsAny<int>())).Returns<int>((id) => GetProduct(id));
+			mockRepository.Setup(x => x.GetProducts(It.IsAny<int[]>())).Returns<int[]>((ids) => GetProducts(ids));
 		}
 
 		[Test]
@@ -80,14 +79,14 @@ namespace StoreItemCalculator.Tests
 					Id = 1,
 					Name = "Thumbs up",
 					UnitPrice = 20,
-					Discount = new Discount{ Type = DiscountType.Flat, Percent = 10 }
+					DiscountStrategy = new FlatDiscountStrategy(new Discount{ Type = DiscountType.Flat, Percent = 10 })
 				},
 				new Product
 				{
 					Id = 2,
 					Name = "Toilet Cleaner",
 					UnitPrice = 45,
-					Discount = new Discount{ Type = DiscountType.Flat, Percent = 10 }
+					DiscountStrategy = new FlatDiscountStrategy(new Discount{ Type = DiscountType.Flat, Percent = 10 })
 				},
 				new Product
 				{
@@ -100,7 +99,7 @@ namespace StoreItemCalculator.Tests
 					Id = 4,
 					Name = "Cooking Oil Bottle - 1 liter",
 					UnitPrice = 180,
-					Discount = new Discount { Type = DiscountType.Unit, UnitsNeeded = 3, UnitsFree = 1 }
+					DiscountStrategy = new UnitDiscountStrategy(new Discount { Type = DiscountType.Unit, UnitsNeeded = 3, UnitsFree = 1 })
 				},
 				new Product
 				{
@@ -113,7 +112,7 @@ namespace StoreItemCalculator.Tests
 					Id = 6,
 					Name = "Tea",
 					UnitPrice = 150,
-					Discount = new Discount{ Type = DiscountType.Flat, Percent = 5 }
+					DiscountStrategy = new FlatDiscountStrategy(new Discount{ Type = DiscountType.Flat, Percent = 5 })
 				},
 				new Product
 				{
@@ -124,14 +123,14 @@ namespace StoreItemCalculator.Tests
 			};
 		}
 
-		private Product GetProduct(int productId)
+		private List<Product> GetProducts(int[] productIds)
 		{
-			return products.FirstOrDefault(x => x.Id == productId);
+			return products.Where(x => productIds.Contains(x.Id)).ToList();
 		}
 
 		private List<Product> GetProducts(DiscountType? discountType = null)
 		{
-			return products.Where(x => x.Discount?.Type == discountType).ToList();
+			return products.Where(x => x.DiscountStrategy?.Discount?.Type == discountType).ToList();
 		}
 	}
 }

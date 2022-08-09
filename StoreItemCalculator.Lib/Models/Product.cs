@@ -8,6 +8,6 @@
 
 		public decimal UnitPrice { get; set; }
 
-		public Discount Discount { get; set; }
+		public IProductDiscountStrategy DiscountStrategy { get; set; }
 	}
 }
